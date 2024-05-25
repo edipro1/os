@@ -102,8 +102,10 @@ echo ${arr[*]}
 
 3.Prime Number Check
 
+
 #storing the number to be checked 
-number=43
+echo "Enter no."
+read number
 i=2 
 
 #flag variable 
@@ -128,7 +130,6 @@ echo "Not Prime"
 else
 echo "Prime"
 fi
-
 
 
 
