@@ -2687,3 +2687,51 @@ int main() {
 
 
 
+
+
+
+
+5. Conversion of Logical / virtual address into  physical address
+
+#include <stdio.h>
+ 
+#define PAGE_SIZE 1024 // Page size 
+ 
+// Page table 
+struct page_table{
+    int virtual_page;
+    int frame; 
+}pg_table[10];
+ 
+int main() {
+ 
+    int page_size = PAGE_SIZE; 
+    int virtual_address, virtual_page_no, offset;
+    int frame_no, physical_address;
+ 
+    // Initialize page table  
+    pg_table[0].virtual_page = 0;
+    pg_table[0].frame = 1;
+ 
+    pg_table[1].virtual_page = 1;
+    pg_table[1].frame = 3;
+    
+    // Input virtual address
+    printf("Enter virtual address: ");
+    scanf("%d", &virtual_address);
+ 
+    // Extract virtual page number and offset
+    virtual_page_no = virtual_address / page_size;
+    offset = virtual_address % page_size;
+ 
+    // Get frame number from page table
+    frame_no = pg_table[virtual_page_no].frame;
+ 
+    // Calculate physical address 
+    physical_address = (frame_no * page_size) + offset;
+ 
+    printf("The physical address is: %d", physical_address);
+ 
+    return 0;
+}
+
