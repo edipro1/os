@@ -192,3 +192,49 @@ int main()
 
         pthread_join(thread_id[i], NULL);
 }
+
+
+
+
+
+5. Save even and odd in different files
+
+#!/bin/bash
+
+# Check if the input file is provided
+if [ "$#" -ne 1 ]; then
+  echo "Usage: $0 input_file"
+  exit 1
+fi
+
+input_file=$1
+
+# Check if the input file exists
+if [ ! -f "$input_file" ]; then
+  echo "File not found: $input_file"
+  exit 1
+fi
+
+# Clear or create the output files
+> even.txt
+> odd.txt
+
+# Read numbers from the input file
+while IFS= read -r number; do
+  # Check if the number is even or odd
+  if [ $((number % 2)) -eq 0 ]; then
+    echo "$number" >> even.txt
+  else
+    echo "$number" >> odd.txt
+  fi
+done < "$input_file"
+
+echo "Processing complete. Check 'even' and 'odd' files for results."
+
+Running:
+chmod +x evod.sh
+./evod.sh input.txt
+
+
+
+
