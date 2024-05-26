@@ -1616,9 +1616,9 @@ int main()
 
 2.	CSCAN:
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 void sort(int req[], int no_req) {
     for(int i = 0; i < no_req-1; i++) {
@@ -1634,6 +1634,7 @@ void sort(int req[], int no_req) {
 
 void cscan(int req[], int no_req, int head, int tracks) {
     int distarray[100], s = 0, c = 0, index = -1;
+    int seq[100];  // Array to store the sequence of requests
 
     sort(req, no_req);
 
@@ -1649,13 +1650,22 @@ void cscan(int req[], int no_req, int head, int tracks) {
         distarray[c] = abs(head - req[i]);
         s += distarray[c];
         head = req[i];
+        seq[c] = head;  // Store the sequence
         c++;
     }
+
+    // Move the head to the end of the disk
+    distarray[c] = abs(head - (tracks - 1));
+    s += distarray[c];
+    head = tracks - 1;
+    seq[c] = head;  // Store the end of the disk
+    c++;
 
     // Move the head to the beginning of the disk
     distarray[c] = abs(head - 0);
     s += distarray[c];
     head = 0;
+    seq[c] = head;  // Store the beginning of the disk
     c++;
 
     // Handle the requests from the beginning of the disk to the head
@@ -1663,12 +1673,13 @@ void cscan(int req[], int no_req, int head, int tracks) {
         distarray[c] = abs(head - req[i]);
         s += distarray[c];
         head = req[i];
+        seq[c] = head;  // Store the sequence
         c++;
     }
 
     printf("\nThe sequence is: ");
     for (int i = 0; i < c; i++) {
-        printf("%d ", req[i]);
+        printf("%d ", seq[i]);
     }
 
     printf("\nDIST: ");
