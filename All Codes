@@ -2820,3 +2820,52 @@ int main() {
     return 0;
 }
 
+
+//Virtual/ logical address in physical address using segmentation and paging
+
+
+
+#include <stdio.h>
+#include <math.h>
+
+int main() {
+    int logicalAddress;
+    int segmentSize, pageSize;
+    int segmentNumber, segmentOffset, pageNumber, pageOffset;
+    int physicalAddress;
+
+    // Taking user input for segment and page sizes
+    printf("Enter segment size: ");
+    scanf("%d", &segmentSize);
+    printf("Enter page size: ");
+    scanf("%d", &pageSize);
+
+    // Taking user input for logical address
+    printf("Enter logical address: ");
+    scanf("%d", &logicalAddress);
+
+    // Calculate segment number and offset
+    segmentNumber = logicalAddress / segmentSize;
+    segmentOffset = logicalAddress % segmentSize;
+
+    // Calculate page number and offset
+    pageNumber = segmentOffset / pageSize;
+    pageOffset = segmentOffset % pageSize;
+
+    // Assuming we have a page table, convert page number to physical frame number
+    int pageTable[] = {2, 0, 1}; // Example page table
+    int frameNumber = pageTable[pageNumber];
+
+    // Calculate physical address
+    physicalAddress = frameNumber * pageSize + pageOffset;
+
+    // Print results
+    printf("Segment Number: %d\n", segmentNumber);
+    printf("Segment Offset: %d\n", segmentOffset);
+    printf("Page Number: %d\n", pageNumber);
+    printf("Page Offset: %d\n", pageOffset);
+    printf("Frame Number: %d\n", frameNumber);
+    printf("Physical Address: %d\n", physicalAddress);
+
+    return 0;
+}
