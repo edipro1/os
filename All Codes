@@ -590,6 +590,41 @@ echo "Factorial of $num is $(factorial $num)"
 
 
 
+15. HCF and LCM
+
+#!/bin/bash
+
+# Function to calculate HCF (GCD) using the Euclidean algorithm
+hcf() {
+    local a=$1
+    local b=$2
+    while [ $b -ne 0 ]; do
+        local temp=$b
+        b=$((a % b))
+        a=$temp
+    done
+    echo $a
+}
+
+# Function to calculate LCM using the relationship between HCF and LCM
+lcm() {
+    local a=$1
+    local b=$2
+    local gcd=$(hcf $a $b)
+    echo $((a * b / gcd))
+}
+
+# Read input from user
+read -p "Enter the first number: " num1
+read -p "Enter the second number: " num2
+
+# Calculate HCF and LCM
+hcf_result=$(hcf $num1 $num2)
+lcm_result=$(lcm $num1 $num2)
+
+# Print the results
+echo "HCF of $num1 and $num2 is: $hcf_result"
+echo "LCM of $num1 and $num2 is: $lcm_result"
 
 
 
