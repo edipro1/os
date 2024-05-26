@@ -909,221 +909,100 @@ int main(){
 
 5.	Round Robin 
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<stdbool.h>
-#include<limits.h>
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <algorithm>
+using namespace std;
 
-typedef struct{
-    int id, arrivalTime, burstTime, finishTime, totalTime, waitingTime;
-} process;
+class Process
+{
+public:
+    int pid;
+    int at;
+    int bt;
+    int rt;
+    int ct;
+    int wt;
+    int tat;
 
-typedef struct node{
-    int val;
-    struct node* next;
-}node;
-
-int dequeue(node** head, node** tail){
-    if(!(*head)) return -1;
-    int ret = (*head)->val;
-    node* temp = (*head);
-    (*head) = (*head)->next;
-    if(!(*head)) *tail = NULL;
-    free(temp);
-    return ret;
-}
-
-void enqueue(int val, node** tail, node** head){
-    node* newNode = malloc(sizeof(node));
-    newNode->next = NULL;
-    newNode->val = val;
-    if(!(*tail)){
-        *head = *tail = newNode;
-        return;
+    Process(int pid, int at, int bt)
+    {
+        this->pid = pid;
+        this->at = at;
+        this->bt = bt;
+        this->rt = bt;
+        this->ct = 0;
+        this->wt = 0;
+        this->tat = 0;
     }
-    else{
-        (*tail)->next = newNode;
-        *tail = newNode;
-    }
+};
 
-}
+int main() {
+    vector<Process> processes;
+    processes.push_back(Process(1, 0, 5));
+    processes.push_back(Process(2, 1, 4));
+    processes.push_back(Process(3, 2, 2));
+    processes.push_back(Process(4, 4, 1));
+    int timequantum = 2;
+    int currTime = 0;
 
-int findMinPriority(node* head, int priority[]){
-    if(!head) return -1;
-    node* curr = head;
-    int min = 0;
-    for(; curr; curr = curr->next){
-        if(priority[curr->val]<=priority[min]) min = curr->val;
-    }
-    return min;
-}
+    queue<Process> readyQ;
+    vector<Process> arrivedProcesses = processes;  
+    int completedprocesses = 0;
+    int n = processes.size();
 
-void deleteQueue(int id, node** head, node** tail){
-    node* curr = *head;
-    node* temp = NULL;
-    //if id at the beginning
-    if(!curr) return;
-    if(curr->val==id){
-        temp = *head;
-        *head = (*head)->next;
-        free(temp);
-        if(!(*head)){
-            *head = NULL;
-            *tail = NULL;
-        }
-
-        return;
-    }
-
-    //not at the start or end
-    node* prev = curr;
-    curr = curr->next;
-    for(; curr->next; curr = curr->next, prev = prev->next){
-        if(curr->val==id){
-            prev->next = curr->next;
-            free(curr);
-            return;
-        }
-    }
-
-    //at the end
-    if((*tail)->val==id){
-        prev->next = NULL;
-        *tail = prev;
-        free(curr);
-    }
-}
-
-void insertBegin(int id, node** head, node** tail){
-    node* newNode = malloc(sizeof(node));
-    newNode->next = *head;
-    newNode->val = id;
-
-    if(!(*head)){
-        *head = *tail = newNode;
-        return;
-    }
-
-    *head = newNode;
-}
-
-void priorityPreemptive(process* processInfo, int numProcesses, int priority[]){
-    int* remainingTime = malloc(sizeof(int)*numProcesses);
-    for(int i = 0; i<numProcesses; i++)
-        remainingTime[i] = INT_MAX;
-
-    int time = 0;
-    int finished = 0;
-    node* head = NULL;
-    node* tail = NULL;
-    while(processInfo[0].arrivalTime!=time) time++;
-    for(int i = 0; i<numProcesses; i++){
-        if(processInfo[i].arrivalTime!=time) break;
-        int id = processInfo[i].id;
-        enqueue(id, &tail, &head);
-        remainingTime[id] = processInfo[i].burstTime;
-    }
-    do{
-        int curr = findMinPriority(head, priority);
-        remainingTime[curr]--;
-        time++;
-        if(remainingTime[curr]==0){
-            finished++;
-            deleteQueue(curr, &head, &tail);
-            processInfo[curr].finishTime = time;
-            processInfo[curr].totalTime = processInfo[curr].finishTime - processInfo[curr].arrivalTime;
-            processInfo[curr].waitingTime = processInfo[curr].totalTime - processInfo[curr].burstTime;
-        }
-
-        for(int i = 0; i<numProcesses; i++){
-            if(processInfo[i].arrivalTime==time){
-                int id = processInfo[i].id;
-                enqueue(id, &tail, &head);
-                remainingTime[id] = processInfo[i].burstTime;
+    while (completedprocesses < n) {
+   
+        for (int i = 0; i < arrivedProcesses.size(); i++) {
+            Process p = arrivedProcesses[i];
+            if (p.at <= currTime) {
+                readyQ.push(p);
+                arrivedProcesses.erase(arrivedProcesses.begin() + i);
+                i--;
             }
         }
-    }while(head && finished!=numProcesses);
-}
 
-void roundRobin(process* processInfo, int numProcesses, int timeSlice){
-    int* remainingTime = malloc(sizeof(int)*numProcesses);
-    for(int i = 0; i<numProcesses; i++)
-        remainingTime[i] = INT_MAX;
+        if (!readyQ.empty()) {
+            Process current = readyQ.front();
+            readyQ.pop();  
+            int executionTime = min(timequantum, current.rt);
+            currTime += executionTime;
+            current.rt -= executionTime;
 
-    int time = 0;
-    int finished = 0;
-    node* head = NULL;
-    node* tail = NULL;
-    while(processInfo[0].arrivalTime!=time) time++;
-    for(int i = 0; i<numProcesses; i++){
-        if(processInfo[i].arrivalTime!=time) break;
-        int id = processInfo[i].id;
-        enqueue(id, &tail, &head);
-        remainingTime[id] = processInfo[i].burstTime;
-    }
-    int curr = dequeue(&head, &tail);
-    int currTimeSlice = timeSlice;
-    bool givePriority = false;
-    bool currFinished = false;
-    do{
-        time++;
-        remainingTime[curr]--;
-        currTimeSlice--;
-        printf("\n\nTime: %d Remaining time: %d Time slice: %d Curr: %d\n", time, remainingTime[curr], currTimeSlice, curr);
-        if(remainingTime[curr]==0){
-            finished++;
-            processInfo[curr].finishTime = time;
-            processInfo[curr].totalTime = processInfo[curr].finishTime - processInfo[curr].arrivalTime;
-            processInfo[curr].waitingTime = processInfo[curr].totalTime - processInfo[curr].burstTime;
-            currFinished = true;
-            givePriority = true;
-            currTimeSlice = timeSlice;
-        }
-        
-        if(currTimeSlice==0 && !currFinished){
-            enqueue(curr, &tail, &head);
-            givePriority = true;
-            currTimeSlice = timeSlice;
-        }
-        for(int i = 0; i<numProcesses; i++){
-            if(processInfo[i].arrivalTime==time){
-                int id = processInfo[i].id;
-                if(givePriority) insertBegin(id, &head, &tail);
-                else enqueue(id, &tail, &head);
-                remainingTime[id] = processInfo[i].burstTime;
+            for (int i = 0; i < arrivedProcesses.size(); i++) {
+                Process p = arrivedProcesses[i];
+                if (p.at <= currTime) {
+                    readyQ.push(p);
+                    arrivedProcesses.erase(arrivedProcesses.begin() + i);
+                    i--;
+                }
             }
-        }
-        if(givePriority || currFinished){
-            curr = dequeue(&head, &tail);
-            givePriority = false;
-            currFinished = false;
-        }
-    }while(finished<numProcesses);
-}
 
-int main(){
-    process *processInfo = malloc(sizeof(process)*5);
-    process p1 = {0, 0, 3, 0, 0, 0};
-    processInfo[0] = p1;
-    process p2 = {1, 3, 6, 0, 0, 0};
-    processInfo[1] = p2;
-    process p3 = {2, 4, 4, 0, 0, 0};
-    processInfo[2] = p3;
-    process p4 = {3, 6, 5, 0, 0, 0};
-    processInfo[3] = p4;
-    process p5 = {4, 8, 2, 0, 0, 0};
-    processInfo[4] = p5;
-
-    int priority[5] = {5,4,3,2,1};
-    //priorityPreemptive(processInfo, 5, priority);
-    //priorityNP(processInfo, 5, priority);
-    roundRobin(processInfo, 5, 2);
-    for(int i = 0; i<5; i++){
-        process curr = processInfo[i];
-        printf("ID: %d  AT: %d  BT: %d  FT: %d  TT: %d  WT: %d\n", curr.id, curr.arrivalTime, curr.burstTime, curr.finishTime, curr.totalTime, curr.waitingTime);
+            if (current.rt > 0) {
+                readyQ.push(current); 
+            } else {
+                current.ct = currTime;
+                current.tat = currTime - current.at;
+                current.wt = current.tat - current.bt;
+                for (auto &p : processes) {
+                    if (p.pid == current.pid) {
+                        p = current;
+                        break;
+                    }
+                }
+                completedprocesses++;
+            }
+        } else {
+            currTime++;
+        }
     }
 
-    free(processInfo);
+    cout << "PID\tAT\tBT\tCT\tTAT\tWT" << endl;
+    for (Process p : processes) {
+        cout << p.pid << "\t" << p.at << "\t" << p.bt << "\t" << p.ct << "\t" << p.tat << "\t" << p.wt << endl;
+    }
+
     return 0;
 }
 
