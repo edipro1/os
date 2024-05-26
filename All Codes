@@ -15,7 +15,7 @@ echo "Enter ur choice:"
 read ch
 case $ch in
 1) echo "Enter any decimal no:"
-read num
+read 
 rem=1
 bno=" "
 while [ $num -gt 0 ]
