@@ -1429,7 +1429,18 @@ return 0;
 
 
 
+
+
+
+
+
 ///// Banker’s Algorithm:
+
+
+
+
+
+
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -2313,7 +2324,120 @@ void main()
 
 
 
+4. Second Chance / Clock:
 
+
+
+
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_FRAMES 3
+
+// Function to find the index of the least recently used frame
+int findLRU(int lru[]) {
+    int min = lru[0];
+    int index = 0;
+    for (int i = 1; i < MAX_FRAMES; i++) {
+        if (lru[i] < min) {
+            min = lru[i];
+            index = i;
+        }
+    }
+    return index;
+}
+
+// Function to perform Least Recently Used (LRU) page replacement algorithm
+int pageFaultsLRU(int pages[], int n) {
+    int frames[MAX_FRAMES];
+    int pageFaults = 0;
+    int lru[MAX_FRAMES] = {0};
+
+    for (int i = 0; i < MAX_FRAMES; i++) {
+        frames[i] = -1; // Initialize all frames to -1 (empty)
+    }
+
+    for (int i = 0; i < n; i++) {
+        bool pageExists = false;
+        // Check if page is already in frames
+        for (int j = 0; j < MAX_FRAMES; j++) {
+            if (frames[j] == pages[i]) {
+                pageExists = true;
+                // Update LRU value for the current frame
+                lru[j] = i + 1; // Timestamp is the index of the page reference + 1
+                break;
+            }
+        }
+
+        if (!pageExists) {
+            pageFaults++;
+            // Find the frame with the lowest LRU value
+            int replaceIndex = findLRU(lru);
+            // Replace the page in the frame with the lowest LRU value
+            frames[replaceIndex] = pages[i];
+            // Update LRU value for the current frame
+            lru[replaceIndex] = i + 1; // Timestamp is the index of the page reference + 1
+        }
+    }
+
+    return pageFaults;
+}
+
+// Function to perform Second Chance (Clock) page replacement algorithm
+int pageFaultsSecondChance(int pages[], int n) {
+    int frames[MAX_FRAMES];
+    bool referenceBit[MAX_FRAMES];
+    int pageFaults = 0;
+    int hand = 0; // Hand points to the next frame to check for replacement
+
+    for (int i = 0; i < MAX_FRAMES; i++) {
+        frames[i] = -1; // Initialize all frames to -1 (empty)
+        referenceBit[i] = false; // Initialize all reference bits to false
+    }
+
+    for (int i = 0; i < n; i++) {
+        bool pageExists = false;
+        // Check if page is already in frames
+        for (int j = 0; j < MAX_FRAMES; j++) {
+            if (frames[j] == pages[i]) {
+                pageExists = true;
+                referenceBit[j] = true; // Set the reference bit to true
+                break;
+            }
+        }
+
+        if (!pageExists) {
+            pageFaults++;
+            while (true) {
+                if (!referenceBit[hand]) {
+                    // Replace the frame pointed by the hand
+                    frames[hand] = pages[i];
+                    referenceBit[hand] = true; // Set the reference bit to true
+                    hand = (hand + 1) % MAX_FRAMES; // Move the hand to the next frame
+                    break;
+                } else {
+                    referenceBit[hand] = false; // Reset the reference bit to false
+                    hand = (hand + 1) % MAX_FRAMES; // Move the hand to the next frame
+                }
+            }
+        }
+    }
+
+    return pageFaults;
+}
+
+int main() {
+    int pages[] = {7, 1, 0, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2, 1, 2, 0, 1, 7, 0, 1};
+    int n = sizeof(pages) / sizeof(pages[0]);
+
+    int pageFaultsLRUVal = pageFaultsLRU(pages, n);
+    printf("Total number of page faults using LRU: %d\n", pageFaultsLRUVal);
+
+    int pageFaultsSecondChanceVal = pageFaultsSecondChance(pages, n);
+    printf("Total number of page faults using Second Chance: %d\n", pageFaultsSecondChanceVal);
+
+    return 0;
+}
 
 
 
